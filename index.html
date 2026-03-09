@@ -354,6 +354,7 @@ canvas{background:transparent!important;}
 
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options='{"load": ["leadCapture"]}'></script>
 </head>
 <body>
 
@@ -516,15 +517,6 @@ html,body{width:100%;height:100%;overflow-x:hidden;}
   </div>
 
   <div class="alert" id="alertBanner"></div>
-
-  <nav class="nav">
-    <button class="nav-btn active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
-    <button class="nav-btn" onclick="showPage('visual',this)">📈 Backtest Visuel</button>
-    <button class="nav-btn" onclick="showPage('backtest',this)">🔬 Optimisation</button>
-    <button class="nav-btn" onclick="showPage('contexte',this)">🔍 Contexte des Signaux</button>
-    <button class="nav-btn" onclick="showPage('explainer',this)">📖 Méthode</button>
-  </nav>
-
   <!-- ═══════════════════════════════════════════════════
        PAGE 1 — DASHBOARD
   ═══════════════════════════════════════════════════ -->
@@ -597,7 +589,7 @@ html,body{width:100%;height:100%;overflow-x:hidden;}
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface2);border-radius:6px;font-size:12px">
           <span>🏦 NFCI Chicago Fed</span>
-          <span style="color:#0dab72;font-weight:600;font-family:'DM Mono',monospace">FRED · NMFCI</span>
+          <span style="color:#0dab72;font-weight:600;font-family:'DM Mono',monospace">FRED · NFCI</span>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface2);border-radius:6px;font-size:12px">
           <span>📉 S&amp;P 500</span>
@@ -721,604 +713,15 @@ html,body{width:100%;height:100%;overflow-x:hidden;}
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════
-       PAGE 2 — BACKTEST VISUEL
-  ═══════════════════════════════════════════════════ -->
-  <div class="page" id="page-visual">
-
-    <!-- Header + zoom controls -->
-    <div class="panel" style="padding:14px 18px">
-      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px">
-        <div class="panel-title" style="margin-bottom:0;flex:1">📊 Backtest Visuel · S&P500 × Score × Vélocité · 1999–2024</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-size:0.58rem;color:var(--bull)">■ Bull ≥55</span>
-          <span style="font-size:0.58rem;color:#f0b429">■ Late 36–54</span>
-          <span style="font-size:0.58rem;color:#f0384f">■ Bear 20–35</span>
-          <span style="font-size:0.58rem;color:#8b5cf6">■ Crise &lt;20</span>
-          <span style="font-size:0.58rem;color:#ff6b00">▲ Alerte</span>
-          <span style="font-size:0.58rem;color:#ff0040">▲ Sévère</span>
-        </div>
-      </div>
-      <!-- Zoom buttons -->
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:0.58rem;color:var(--dim);margin-right:4px">ZOOM :</span>
-        <button class="ptab active" id="zb-all"  onclick="setZoom('all',this)">Tout (1999–2024)</button>
-        <button class="ptab" id="zb-dotcom" onclick="setZoom('dotcom',this)">Dot-com 99–03</button>
-        <button class="ptab" id="zb-gfc"    onclick="setZoom('gfc',this)">GFC 06–10</button>
-        <button class="ptab" id="zb-bull14" onclick="setZoom('bull14',this)">Bull 10–14</button>
-        <button class="ptab" id="zb-patch"  onclick="setZoom('patch',this)">Soft Patch 14–17</button>
-        <button class="ptab" id="zb-covid"  onclick="setZoom('covid',this)">COVID 19–21</button>
-        <button class="ptab" id="zb-infl"   onclick="setZoom('infl',this)">Inflation 21–24</button>
-      </div>
-    </div>
-
-    <!-- CHART 1 — SPX coloré par régime -->
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div class="panel-title" style="margin-bottom:2px">① S&P 500 — Coloré par régime détecté · Axe log</div>
-          <div class="panel-sub">Couleur = régime calculé par le score composite ce mois-là · ▲ = alerte vélocité déclenchée</div>
-        </div>
-        <div id="spxCurVal" class="badge" style="white-space:nowrap">SPX —</div>
-      </div>
-      <div class="ch" style="height:380px"><canvas id="btSpxChart"></canvas></div>
-    </div>
-
-    <!-- CHART 2 — Score composite -->
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div class="panel-title" style="margin-bottom:2px">② Score composite (0–100) — Zones de régime</div>
-          <div class="panel-sub">Fond coloré par zone : vert ≥55 · jaune 36–54 · rouge 20–35 · violet &lt;20</div>
-        </div>
-        <div id="scoreCurVal" class="badge">Score —</div>
-      </div>
-      <div class="ch" style="height:200px"><canvas id="btScoreChart"></canvas></div>
-    </div>
-
-    <!-- CHART 3 — Vélocité composite + par indicateur -->
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div class="panel-title" style="margin-bottom:2px">③ Vélocité de dégradation — Composite + Décomposition par indicateur</div>
-          <div class="panel-sub">Barres = vélocité composite Δ3m · Lignes = contribution de chaque indicateur · Rouge &lt;−8 = alerte · &lt;−20 = sévère</div>
-        </div>
-        <div id="velCurVal" class="badge">Δ3m —</div>
-      </div>
-      <div class="ch" style="height:220px"><canvas id="btVelChart"></canvas></div>
-    </div>
-
-    <!-- CHART 4 — Heatmap de synchronisation inter-indicateurs -->
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div class="panel-title" style="margin-bottom:2px">④ Synchronisation inter-indicateurs — Combien se dégradent en même temps ?</div>
-          <div class="panel-sub">0 = aucun indicateur en baisse · 4 = les 4 indicateurs se dégradent simultanément · Rouge foncé = signal fort</div>
-        </div>
-      </div>
-      <div class="ch" style="height:120px"><canvas id="btSyncChart"></canvas></div>
-    </div>
-
-    <!-- Episode detail panel — clickable -->
-    <div class="panel" id="epDetailPanel" style="display:none;border:1px solid #ff6b0060">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div class="panel-title" style="margin-bottom:0;color:#ff6b00" id="epDetailTitle">Épisode sélectionné</div>
-        <button onclick="document.getElementById('epDetailPanel').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--dim);padding:3px 8px;border-radius:3px;cursor:pointer;font-family:var(--fm);font-size:0.6rem">✕ Fermer</button>
-      </div>
-      <div id="epDetailContent" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:0.62rem"></div>
-    </div>
-
-    <!-- Episodes table -->
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div>
-          <div class="panel-title" style="margin-bottom:2px">📋 Historique des 23 épisodes de dégradation simultanée (1999–2024)</div>
-          <div class="panel-sub">Cliquez sur une ligne pour zoomer · Vélocité composite &lt;−8pts + ≥2 indicateurs en baisse simultanée</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <span style="font-size:0.56rem;padding:3px 7px;border-radius:3px;background:#f0384f20;border:1px solid #f0384f40;color:#f0384f">🔴 Sévère &lt;−25</span>
-          <span style="font-size:0.56rem;padding:3px 7px;border-radius:3px;background:#ff6b0020;border:1px solid #ff6b0040;color:#ff6b00">🟠 Fort −15→−25</span>
-          <span style="font-size:0.56rem;padding:3px 7px;border-radius:3px;background:#f0b42920;border:1px solid #f0b42940;color:#f0b429">🟡 Modéré −8→−15</span>
-        </div>
-      </div>
-      <div style="overflow-x:auto">
-        <table class="bt-table" id="velEpTable">
-          <thead><tr>
-            <th>Date</th><th>Intensité</th><th>Vélocité</th><th>Ind. dégradés</th>
-            <th>Score t0</th><th>SPX t0</th><th>SPX +3m</th><th>SPX +6m</th><th>Verdict</th><th style="text-align:left;padding-left:12px">Contexte</th>
-          </tr></thead>
-          <tbody id="velEpBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Rule summary -->
-    <div class="panel">
-      <div class="panel-title" style="margin-bottom:12px">📐 Règle empirique — Score + Vélocité = signal combiné</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
-        <div style="background:var(--surface2);border:1px solid #f0b42940;border-radius:5px;padding:14px">
-          <div style="color:#f0b429;font-weight:700;font-size:0.72rem;margin-bottom:8px">🟡 ALERTE MODÉRÉE</div>
-          <div style="font-size:0.6rem;color:var(--dim);line-height:1.8">
-            <code style="color:#f0b429">Score &gt; 60 + Vélocité &lt; −15</code><br><br>
-            Correction temporaire probable<br>Rebond généralement suivi<br>→ Réduire légèrement l'exposition<br><br>
-            <span style="color:#f0b429;font-size:0.56rem">Exemples : 2006, 2018 Q4, 2019<br>Performance moy +6m : +9.3%</span>
-          </div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid #ff6b0040;border-radius:5px;padding:14px">
-          <div style="color:#ff6b00;font-weight:700;font-size:0.72rem;margin-bottom:8px">🟠 ALERTE SÉRIEUSE</div>
-          <div style="font-size:0.6rem;color:var(--dim);line-height:1.8">
-            <code style="color:#ff6b00">Score 40–60 + Vélocité &lt; −15</code><br><br>
-            Bear confirmé dans 40% des cas<br>Souvent un point d'inflexion<br>→ Réduire significativement<br><br>
-            <span style="color:#ff6b00;font-size:0.56rem">Exemples : 2007-Sep, 2015-16, 2022<br>Performance moy +6m : −2.1%</span>
-          </div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid #f0384f40;border-radius:5px;padding:14px">
-          <div style="color:#f0384f;font-weight:700;font-size:0.72rem;margin-bottom:8px">🔴 SIGNAL BEAR FORT</div>
-          <div style="font-size:0.6rem;color:var(--dim);line-height:1.8">
-            <code style="color:#f0384f">Score &lt; 45 + Vélocité &lt; −20</code><br><br>
-            Bear confirmé dans 80% des cas<br>Sortie défensive recommandée<br>→ Attendre rebond du score<br><br>
-            <span style="color:#f0384f;font-size:0.56rem">Exemples : 2000, 2008, 2022 Q1<br>Performance moy +6m : −14.2%</span>
-          </div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div style="padding:12px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:4px;font-size:0.6rem;color:var(--dim);line-height:1.8">
-          <span style="color:var(--bull);font-weight:700">⭐ Signal précoce clé — Sep 2007</span><br>
-          Vélocité −19pts, score encore à 60/100 → <strong style="color:var(--text)">14 mois avant Lehman</strong>. Le marché ne corrige pas immédiatement (+3.6% à 6m) car le score reste élevé. Mais c'est le premier signal structurel : spreads HY + VIX + ISM se dégradent ensemble pour la première fois depuis 2003. Quiconque a vu ce signal avait 14 mois de fenêtre de sortie progressive.
-        </div>
-        <div style="padding:12px;background:rgba(255,59,92,0.05);border:1px solid rgba(255,59,92,0.15);border-radius:4px;font-size:0.6rem;color:var(--dim);line-height:1.8">
-          <span style="color:#f0384f;font-weight:700">⚠️ Faux signal — Mar 2023 (SVB)</span><br>
-          Vélocité −46pts (la plus sévère de tout l'historique hors COVID), score à 30/100 → <strong style="color:var(--text)">mais SPX +8.3% à 3m</strong>. Pourquoi ? La Fed et le Trésor ont résolu la crise SVB en 72h. C'est le cas où le signal macro a raté car l'intervention politique a été immédiate et totale. Rappel : le modèle mesure les fondamentaux, pas la réponse politique.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       PAGE 3 — BACKTEST & OPTIMISATION
-  ═══════════════════════════════════════════════════ -->
-  <div class="page" id="page-backtest">
-
-    <!-- Optimization results -->
-    <div class="panel">
-      <div class="panel-title">Résultats d'optimisation · Meilleurs paramètres trouvés par backtest</div>
-      <div class="panel-sub" style="margin-bottom:14px">Testé sur 15 périodes historiques (1999–2024) · Critère : maximiser la cohérence régime détecté vs régime réel sans sur-optimiser</div>
-      <div class="opt-grid" id="optGrid"></div>
-    </div>
-
-    <!-- Sensitivity chart -->
-    <div class="panel">
-      <div class="panel-title" style="margin-bottom:4px">Sensibilité du score · Impact des poids sur la précision</div>
-      <div class="panel-sub" style="margin-bottom:12px">Chaque barre = précision du modèle (% périodes correctement classifiées) selon le poids accordé à chaque indicateur</div>
-      <div class="ch h260"><canvas id="sensitivityChart"></canvas></div>
-    </div>
-
-    <!-- Threshold test -->
-    <div class="panel">
-      <div class="panel-title" style="margin-bottom:4px">Test des seuils de changement de régime</div>
-      <div class="panel-sub" style="margin-bottom:12px">Bull si score ≥ X · Bear si score ≤ Y · Optimum trouvé : Bull ≥65 / Late 45–65 / Bear ≤45</div>
-      <div class="ch h260"><canvas id="thresholdChart"></canvas></div>
-    </div>
-
-    <!-- Backtest table -->
-    <div class="panel">
-      <div class="panel-title" style="margin-bottom:14px">Table de backtest · 15 périodes · Score moyen, cohérence, signal</div>
-      <table class="bt-table" id="btTable">
-        <thead><tr>
-          <th>Période</th><th>Type Réel</th><th>Score Moy</th><th>Score Min</th><th>Score Max</th>
-          <th>Régime Détecté</th><th>Cohérence</th><th>Signal Précoce</th>
-        </tr></thead>
-        <tbody id="btBody"></tbody>
-      </table>
-    </div>
-
-    <!-- Correlation matrix -->
-    <div class="panel">
-      <div class="panel-title" style="margin-bottom:4px">Corrélation indicateurs × direction SPX (mois suivant)</div>
-      <div class="panel-sub" style="margin-bottom:12px">Corrélation de Pearson entre chaque indicateur et la performance SPX à 1 mois, 3 mois et 6 mois</div>
-      <div class="ch h260"><canvas id="corrChart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       PAGE 3 — EXPLICATIONS
-  ═══════════════════════════════════════════════════ -->
-  <!-- ============================================================ -->
-  <!-- PAGE : CONTEXTE DES SIGNAUX                                  -->
-  <!-- ============================================================ -->
-  <div class="page" id="page-contexte">
-    <div class="panel">
-      <div class="panel-title">🔍 Contexte des signaux — Pourquoi le marché peut dévier du score macro</div>
-      <div class="panel-sub">Indicateurs contextuels non intégrés au score · Explications des anomalies historiques 2020 / 2022 / 2023</div>
-
-      <!-- JAUGES CONTEXTUELLES TEMPS RÉEL -->
-      <div style="margin:18px 0 8px;font-size:0.65rem;font-weight:700;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase">Indicateurs contextuels actuels — lecture complémentaire au score</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px" id="ctxGauges">
-        <!-- Rempli par JS -->
-        <div class="ctx-gauge" id="gaugePP">
-          <div class="ctx-gauge-title">ISM Prices Paid</div>
-          <div class="ctx-gauge-val" id="ppVal">—</div>
-          <div class="ctx-gauge-bar"><div class="ctx-gauge-fill" id="ppBar"></div></div>
-          <div class="ctx-gauge-sig" id="ppSig">Signal inflation · Hors score composite</div>
-        </div>
-        <div class="ctx-gauge" id="gaugeCL">
-          <div class="ctx-gauge-title">Jobless Claims 4S</div>
-          <div class="ctx-gauge-val" id="clVal">—</div>
-          <div class="ctx-gauge-bar"><div class="ctx-gauge-fill" id="clBar"></div></div>
-          <div class="ctx-gauge-sig" id="clSig">Indicateur emploi · Retardé · Hors score</div>
-        </div>
-        <div class="ctx-gauge" id="gaugeCPI">
-          <div class="ctx-gauge-title">CPI YoY</div>
-          <div class="ctx-gauge-val" id="cpiVal">—</div>
-          <div class="ctx-gauge-bar"><div class="ctx-gauge-fill" id="cpiBar"></div></div>
-          <div class="ctx-gauge-sig" id="cpiSig">Inflation officielle · Retardée · Hors score</div>
-        </div>
-      </div>
-
-      <!-- POURQUOI PAS DANS LE SCORE -->
-      <div class="exp-section">
-        <h2>🎯 Pourquoi ces indicateurs ne sont pas dans le score composite ?</h2>
-        <p>La question est légitime : l'inflation et l'emploi sont fondamentaux pour l'économie. Ils ne sont pas dans le score pour une raison précise que le backtest confirme — <strong>ils dégradent la précision</strong>. Le test sur 37 épisodes 1999–2024 donne :</p>
-        <table class="exp-table">
-          <tr><th>Configuration</th><th>Précision</th><th>Verdict</th></tr>
-          <tr><td>Score actuel (4 indicateurs)</td><td><span class="tag bull">93% global · 86% out-of-sample</span></td><td>Configuration retenue</td></tr>
-          <tr><td>ISM repondéré 30% Mfg / 70% Svc</td><td><span class="tag warn">62% — dégradation</span></td><td>Écarté</td></tr>
-          <tr><td>Score + ISM Prices Paid + Claims</td><td><span class="tag bear">54% — dégradation forte</span></td><td>Écarté</td></tr>
-        </table>
-
-        <h3>Pourquoi l'ISM Manufacturing garde 50% de poids malgré 11% du PIB ?</h3>
-        <p>Parce qu'il ne représente pas 11% du PIB — il <strong>anticipe</strong> ce qui va se passer dans 100% de l'économie. Le Manufacturing suit les commandes B2B et les stocks des entreprises. Quand les commandes industrielles chutent, les services (transport, logistique, finance d'entreprise) suivent 2 à 3 mois après. C'est un <strong>indicateur avancé déguisé en indicateur sectoriel</strong>. Lui donner 30% c'est sacrifier son pouvoir prédictif au profit d'une représentativité du PIB qui n'est pas l'objectif du modèle.</p>
-
-        <h3>Pourquoi l'emploi est retardé</h3>
-        <p>Les entreprises réduisent leurs commandes (ISM baisse) → puis leurs heures travaillées → puis seulement elles licencient. Les Jobless Claims ne montent qu'après que la dégradation soit déjà dans l'ISM et les spreads. En 2022, les Claims restaient à 200k alors que le bear était bien installé. Les ajouter au score revient à <strong>diluer un signal avancé avec un signal retardé</strong>.</p>
-
-        <h3>Pourquoi l'inflation est neutre pour la direction du marché</h3>
-        <p>L'inflation peut coexister avec un marché haussier fort (2021 : CPI à 5-7%, SPX +28%), ou avec un marché baissier (2022 : CPI à 8-9%, SPX −25%). Ce n'est pas l'inflation elle-même qui fait monter ou baisser — c'est la <strong>réaction de la Fed à l'inflation</strong>. Et cette réaction est déjà captée par notre modificateur Fed Funds. Ajouter le CPI doublerait un signal qu'on a déjà, avec du bruit supplémentaire.</p>
-      </div>
-
-      <!-- 3 ÉPISODES HISTORIQUES -->
-      <div class="exp-section">
-        <h2>📅 Épisode 1 — COVID Mars 2020 : choc exogène, résolution politique</h2>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">
-          <div class="ctx-ep-card bear">
-            <div class="ctx-ep-ind">Spreads HY</div>
-            <div class="ctx-ep-val">3.4% → 10.9%</div>
-            <div class="ctx-ep-note">+7.5% en 3 semaines — record absolu de vitesse</div>
-          </div>
-          <div class="ctx-ep-card bear">
-            <div class="ctx-ep-ind">VIX</div>
-            <div class="ctx-ep-val">15 → 85.5</div>
-            <div class="ctx-ep-note">Plus haut historique, dépasse Lehman (80)</div>
-          </div>
-          <div class="ctx-ep-card bear">
-            <div class="ctx-ep-ind">ISM Services</div>
-            <div class="ctx-ep-val">57 → 26.7</div>
-            <div class="ctx-ep-note">Jamais vu — plus bas que 2008 (37)</div>
-          </div>
-          <div class="ctx-ep-card bear">
-            <div class="ctx-ep-ind">Jobless Claims</div>
-            <div class="ctx-ep-val">210k → 6 800k</div>
-            <div class="ctx-ep-note">+32x en 2 semaines · Record absolu</div>
-          </div>
-        </div>
-        <p>Le modèle a correctement détecté la crise en temps réel : score 68/100 en janvier → 16/100 en mars. Mais il affiche SPX +20% à 6 mois. <strong>Ce n'est pas un échec du modèle — c'est une limite structurelle de tout modèle macro face à un choc exogène résolu par intervention politique.</strong></p>
-        <p>Le 23 mars 2020, la Fed a annoncé pour la première fois de son histoire l'achat d'obligations d'entreprises ("fallen angels"). Le Trésor a déployé 2 000 milliards de dollars en moins d'un mois. En juin, l'ISM Services était déjà à 57. Les spreads HY revenaient à 4% en septembre. <strong>La macro s'est effondrée puis reconstruite plus vite que n'importe quel cycle précédent.</strong> Aucun modèle fondé sur les données passées ne peut anticiper une pandémie, ni une réponse fiscale de cette ampleur.</p>
-        <div class="formula-box" style="border-color:#8b5cf640;background:#8b5cf608">
-          <span style="color:#8b5cf6">Leçon opérationnelle :</span> Quand le score passe en Crise (&lt;20) suite à un choc exogène identifiable (événement soudain non-économique), la résolution politique peut inverser le signal en 4 à 8 semaines. Réduire l'exposition au moment du choc reste correct — mais revenir rapidement si les spreads HY commencent à se resserrer malgré un score encore dégradé.
-        </div>
-      </div>
-
-      <div class="exp-section">
-        <h2>📅 Épisode 2 — 2022 : bear de valorisation, pas bear économique</h2>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">
-          <div class="ctx-ep-card warn">
-            <div class="ctx-ep-ind">ISM Composite</div>
-            <div class="ctx-ep-val">58 → 49</div>
-            <div class="ctx-ep-note">Ralentissement progressif, pas effondrement</div>
-          </div>
-          <div class="ctx-ep-card bear">
-            <div class="ctx-ep-ind">Courbe 10Y-2Y</div>
-            <div class="ctx-ep-val">0% → −0.68%</div>
-            <div class="ctx-ep-note">Inversion record depuis 1981</div>
-          </div>
-          <div class="ctx-ep-card warn">
-            <div class="ctx-ep-ind">Spreads HY</div>
-            <div class="ctx-ep-val">3.5% → 5.4%</div>
-            <div class="ctx-ep-note">Stress modéré — pas de crise crédit</div>
-          </div>
-          <div class="ctx-ep-card bear">
-            <div class="ctx-ep-ind">CPI (hors score)</div>
-            <div class="ctx-ep-val">7% → 9.1%</div>
-            <div class="ctx-ep-note">Cause réelle du bear : repricing des taux</div>
-          </div>
-        </div>
-        <p>Le S&P500 a baissé de 25% en 2022. Le score du modèle est passé de 72 en janvier à 35 en juin — la détection était correcte dans sa direction. Mais la cause économique est différente des bears précédents : <strong>ce n'était pas une crise du crédit ni une récession économique, c'était un repricing de valorisation</strong>.</p>
-        <p>Quand les taux sans risque passent de 0% à 5%, la valeur actualisée de tous les flux futurs baisse mécaniquement. Un marché à 22x les bénéfices avec des taux à 0% est "juste" — le même marché à 22x avec des taux à 5% est cher. Les P/E ont retraité de 22x à 17x, ce qui explique mécaniquement l'essentiel de la baisse sans récession. Les entreprises licenciaient peu (Claims à 200-230k), les résultats tenaient, mais les multiples s'effondraient.</p>
-        <p><strong>Les Jobless Claims (hors score) auraient ici un rôle de contexte utile :</strong> ils signalaient que l'emploi restait solide, ce qui est un signe que c'est un bear de valorisation et non un bear économique — et donc potentiellement moins long et moins sévère qu'un GFC.</p>
-        <div class="formula-box" style="border-color:#f0b42940;background:#f0b42908">
-          <span style="color:#f0b429">Leçon opérationnelle :</span> En période de hausse rapide des taux, le score peut signaler Bear alors que l'économie réelle est Late Cycle. Croiser avec les Jobless Claims (si &lt;280k : emploi sain → bear probablement court) et le niveau des spreads HY (si &lt;5% : pas de crise crédit → baisse limitée à 20-30%).
-        </div>
-      </div>
-
-      <div class="exp-section">
-        <h2>📅 Épisode 3 — 2023 : l'anomalie IA, quand 7 titres font l'indice</h2>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">
-          <div class="ctx-ep-card bear">
-            <div class="ctx-ep-ind">ISM Manufacturing</div>
-            <div class="ctx-ep-val">46–47</div>
-            <div class="ctx-ep-note">12 mois consécutifs en contraction (&lt;50)</div>
-          </div>
-          <div class="ctx-ep-card bull">
-            <div class="ctx-ep-ind">ISM Services</div>
-            <div class="ctx-ep-val">52–55</div>
-            <div class="ctx-ep-note">Solide tout au long de l'année</div>
-          </div>
-          <div class="ctx-ep-card bull">
-            <div class="ctx-ep-ind">Jobless Claims</div>
-            <div class="ctx-ep-val">200–220k</div>
-            <div class="ctx-ep-note">Emploi au plein emploi malgré taux à 5.33%</div>
-          </div>
-          <div class="ctx-ep-card bull">
-            <div class="ctx-ep-ind">SPX réalisé</div>
-            <div class="ctx-ep-val">+24%</div>
-            <div class="ctx-ep-note">Vs score modèle : 30–40 (zone Bear/Late)</div>
-          </div>
-        </div>
-        <p>C'est l'épisode le plus difficile pour tout modèle macro. Le score oscillait entre 28 et 45 — zone Bear à Late Cycle. La réalité : SPX +24%. Trois phénomènes expliquent la déconnexion.</p>
-        <p><strong>Premier phénomène — la divergence Manufacturing / Services.</strong> L'ISM Manufacturing était en contraction depuis novembre 2022 (sous 50), mais l'ISM Services restait en expansion à 52-55. Notre composite moyenne les deux et signalait "quasi-neutre". La réalité économique était bimodale : l'industrie souffrait, les services (80% du PIB) tenaient. L'économie américaine n'est pas entrée en récession.</p>
-        <p><strong>Deuxième phénomène — la concentration extrême du marché.</strong> En 2023, Apple, Microsoft, Nvidia, Meta, Google, Amazon et Tesla ont contribué à eux seuls à plus de 80% de la performance du S&P500. Le reste du marché (les 493 autres titres) a fait environ +8%. Ce n'est pas un signal macro — c'est un thème sectoriel (l'IA générative, GPT-4 lancé en mars 2023, Nvidia qui guide des revenus explosifs en mai) qui a porté une poignée de méga-caps à des valorisations record.</p>
-        <p><strong>Troisième phénomène — la résilience du consommateur américain.</strong> Les ménages américains ont des dettes hypothécaires à taux fixe sur 30 ans. La hausse des taux de la Fed ne les touche pas directement — seulement lors d'un achat ou refinancement. Ceux qui avaient refinancé à 3% en 2020-2021 continuaient de payer 3% en 2023 malgré des taux à 7%. La consommation a tenu, les services ont tenu, le chômage est resté à 3.5-3.7%.</p>
-        <div class="formula-box" style="border-color:var(--bull)40;background:var(--bull)08">
-          <span style="color:var(--bull)">Leçon opérationnelle :</span> Quand le score est en zone Bear/Late (30–50) mais que les Jobless Claims restent sous 250k ET que les spreads HY sont sous 4.5%, il est probable que la dégradation macro soit sectorielle et non systémique. Dans ce cas, le signal du modèle indique "prudence et exposition réduite" — pas "sortie totale du marché". La sortie totale est réservée aux situations où les 4 indicateurs convergent simultanément vers le bas.
-        </div>
-      </div>
-
-      <div class="exp-section">
-        <h2>🧭 Guide de lecture croisée — Score + Contexte</h2>
-        <p>La grille suivante résume comment combiner le score composite avec les indicateurs contextuels pour affiner la lecture du signal.</p>
-        <table class="exp-table">
-          <tr><th>Score</th><th>Claims &lt;250k</th><th>Spreads HY &lt;4.5%</th><th>ISM Svc &gt;52</th><th>Interprétation</th></tr>
-          <tr>
-            <td><span class="tag bull">≥55 Bull</span></td>
-            <td>✓</td><td>✓</td><td>✓</td>
-            <td>Bull confirmé — pleine exposition justifiée</td>
-          </tr>
-          <tr>
-            <td><span class="tag warn">40–55 Late</span></td>
-            <td>✓</td><td>✓</td><td>✓</td>
-            <td>Late Cycle mais économie réelle saine — exposition réduite, pas sortie (contexte 2023)</td>
-          </tr>
-          <tr>
-            <td><span class="tag warn">40–55 Late</span></td>
-            <td>✗</td><td>✗</td><td>✗</td>
-            <td>Late Cycle avec détérioration réelle — réduction significative justifiée</td>
-          </tr>
-          <tr>
-            <td><span class="tag bear">25–40 Bear</span></td>
-            <td>✓</td><td>&lt;5%</td><td>✓</td>
-            <td>Bear de valorisation probable (contexte 2022) — baisse limitée, pas systémique</td>
-          </tr>
-          <tr>
-            <td><span class="tag bear">25–40 Bear</span></td>
-            <td>✗</td><td>&gt;6%</td><td>✗</td>
-            <td>Bear économique classique (2001, 2008) — exposition minimale défensive</td>
-          </tr>
-          <tr>
-            <td><span class="tag bear">&lt;20 Crise</span></td>
-            <td>—</td><td>&gt;9%</td><td>—</td>
-            <td>Crise systémique — sortie ou hedging total, attendre la stabilisation des spreads</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="page" id="page-explainer">
-    <div class="panel">
-
-      <div class="exp-section">
-        <h2>🎯 Architecture du système — Vue d'ensemble</h2>
-        <p>Ce dashboard construit un <strong>score composite 0–100</strong> qui mesure la santé macroéconomique en temps réel. Il combine 4 indicateurs principaux, 2 modificateurs contextuels (Fed et NFCI), et un système de vélocité pour détecter les retournements avant qu'ils ne soient confirmés dans les données.</p>
-        <div class="formula-box">
-          <span>Score Final = Score Base (4 indicateurs) + Modificateur Fed + Ajustement NFCI*</span><br><br>
-          * NFCI activé uniquement si score base 40–68 (zone ambiguë de fin de cycle)<br><br>
-          Régimes : <span>≥55</span> Bull Confirmé &nbsp;|&nbsp; <span>36–54</span> Late Cycle &nbsp;|&nbsp; <span>20–35</span> Bear &nbsp;|&nbsp; <span>&lt;20</span> Crise<br>
-          <span style="font-size:0.58rem;color:#64748b">Précision 80% sur 30 épisodes 1999–2024 · 86% hors chocs exogènes non prédictibles</span>
-        </div>
-        <h3>Principe de sélection des indicateurs</h3>
-        <p>Chaque indicateur a été sélectionné selon 3 critères : pouvoir prédictif démontré sur les données 1999–2024, <strong>indépendance relative</strong> des autres indicateurs (éviter de mesurer deux fois la même chose), et disponibilité en temps réel. Ensemble ils couvrent les 4 canaux de transmission d'un choc : la courbe bancaire (10Y-2Y), le risque de défaut corporate (HY spreads), la psychologie de marché (VIX), et l'activité réelle (ISM).</p>
-      </div>
-
-      <div class="exp-section">
-        <h2>📐 Indicateur 1 — Courbe des Taux 10Y–2Y · Poids 20pts</h2>
-        <h3>Mécanisme économique</h3>
-        <p>La courbe mesure l'écart entre taux 10 ans et 2 ans. En temps normal, emprunter long coûte plus cher → spread positif. Quand la Fed monte agressivement les taux courts, les taux 2 ans montent plus vite que les taux 10 ans. Spread inversé → les banques (qui empruntent court, prêtent long) voient leur marge comprimée → elles durcissent le crédit → l'économie ralentit. Ce mécanisme met 12–18 mois à se matérialiser dans les données macroéconomiques.</p>
-        <div class="formula-box">Spread = Taux 10 ans − Taux 2 ans · Série FRED : <span>T10Y2Y</span> · Publication quotidienne</div>
-        <h3>Le signal souvent oublié : la re-pentification rapide</h3>
-        <p>L'inversion précède la récession. Mais le vrai signal de timing c'est la <strong>remontée rapide depuis une inversion profonde</strong> : la Fed commence à couper les taux en urgence (reconnaissance implicite d'une détérioration), ce qui précède de quelques mois le stress systémique. Sep 2007 et Oct 2019 illustrent ce pattern.</p>
-        <table class="exp-table">
-          <tr><th>Valeur</th><th>Signal</th><th>Points</th><th>Exemple historique</th></tr>
-          <tr><td>&gt; 1.5%</td><td><span class="tag bull">Expansion durable</span></td><td>12/12</td><td>2003–2005, 2010–2012</td></tr>
-          <tr><td>0.2% – 1.5%</td><td><span class="tag bull">Cycle sain</span></td><td>9/12</td><td>2014–2015, 2024</td></tr>
-          <tr><td>0% – 0.2%</td><td><span class="tag warn">Fin de cycle</span></td><td>5/12</td><td>Fin 2006, fin 2019</td></tr>
-          <tr><td>-0.8% – 0%</td><td><span class="tag warn">Inversion modérée</span></td><td>2/12</td><td>2022–2023</td></tr>
-          <tr><td>&lt; -0.8%</td><td><span class="tag bear">Alerte récession</span></td><td>0/12</td><td>2000, 2007, 2022 pic</td></tr>
-        </table>
-      </div>
-
-      <div class="exp-section">
-        <h2>💳 Indicateur 2 — Credit Spreads High-Yield OAS · Poids 20pts</h2>
-        <h3>Mécanisme économique</h3>
-        <p>L'OAS mesure la prime de risque que les investisseurs exigent pour prêter aux entreprises très endettées plutôt qu'à l'État américain. Les gérants obligataires analysent les bilans en profondeur — ils voient les problèmes <strong>avant les actionnaires</strong>. Un élargissement "sans raison apparente" des spreads signale souvent une détérioration des bilans que les marchés actions n'ont pas encore intégrée.</p>
-        <div class="formula-box">OAS = Rendement HY − Rendement Treasury équivalent · Série FRED : <span>BAMLH0A0HYM2</span> · Publication quotidienne</div>
-        <h3>Précédence historique</h3>
-        <p>En 2007, les spreads ont commencé à s'élargir en <strong>juin 2007</strong> — 4 mois avant le pic du S&P500 en octobre. Le marché des options sur HY était encore plus précoce : stress visible dès mars 2007 dans les CDS sur ABX (ABS subprime). En 2020, passage de 3% à 11% en 3 semaines — résolu par le Fed put du 23 mars 2020.</p>
-        <table class="exp-table">
-          <tr><th>OAS</th><th>Signal</th><th>Points</th><th>Exemple</th></tr>
-          <tr><td>&lt; 2.5%</td><td><span class="tag bull">Risk-on fort</span></td><td>12/12</td><td>2024, 2017, 2014</td></tr>
-          <tr><td>2.5% – 4.0%</td><td><span class="tag bull">Normal</span></td><td>9/12</td><td>Milieu de cycle standard</td></tr>
-          <tr><td>4.0% – 6.0%</td><td><span class="tag warn">Élargissement</span></td><td>4/12</td><td>2011, 2015–2016</td></tr>
-          <tr><td>6.0% – 10%</td><td><span class="tag bear">Stress crédit</span></td><td>1/12</td><td>2002, 2022 pic</td></tr>
-          <tr><td>&gt; 10%</td><td><span class="tag bear">Crise</span></td><td>0/12</td><td>2008 (20%), 2020 (11%)</td></tr>
-        </table>
-      </div>
-
-      <div class="exp-section">
-        <h2>⚡ Indicateur 3 — VIX · Poids 20pts</h2>
-        <h3>Mécanisme économique</h3>
-        <p>Le VIX mesure la volatilité implicite des options sur S&P500 pour les 30 prochains jours — le prix que les investisseurs paient pour se couvrir contre une baisse. Un VIX élevé reflète l'incertitude : les agents économiques retardent leurs décisions d'investissement, les conditions financières se durcissent, le risque de contagion augmente. Mais un VIX très bas (&lt;13) peut aussi signaler une <strong>complaisance excessive</strong> qui précède les chocs.</p>
-        <div class="formula-box">VIX ≈ Volatilité implicite annualisée × 100 · Série FRED : <span>VIXCLS</span><br>VIX 15 → ±4.3%/mois anticipé · VIX 45 → ±13%/mois anticipé (Lehman = 80)</div>
-        <h3>Niveau vs tendance</h3>
-        <p>Un VIX à 22 qui monte depuis 13 est plus dangereux qu'un VIX à 22 qui descend depuis 45. Le scoring évalue les deux séparément : niveau absolu (12pts) et tendance sur 1 mois (8pts).</p>
-        <table class="exp-table">
-          <tr><th>VIX niveau</th><th>Signal</th><th>Momentum 1m</th><th>Signal momentum</th></tr>
-          <tr><td>&lt; 13</td><td><span class="tag bull">Calme (potentiel complaisance)</span></td><td>Baisse &gt;3</td><td><span class="tag bull">Risk-on confirmé</span></td></tr>
-          <tr><td>13 – 25</td><td><span class="tag bull">Zone normale</span></td><td>Stable</td><td><span class="tag warn">Neutre</span></td></tr>
-          <tr><td>25 – 28</td><td><span class="tag warn">Elevated</span></td><td>Hausse &gt;3</td><td><span class="tag bear">Alerte</span></td></tr>
-          <tr><td>28 – 40</td><td><span class="tag bear">Stress</span></td><td>—</td><td>—</td></tr>
-          <tr><td>&gt; 40</td><td><span class="tag bear">Panique systémique</span></td><td>—</td><td>—</td></tr>
-        </table>
-      </div>
-
-      <div class="exp-section">
-        <h2>🏭 Indicateur 4 — ISM Composite MM3/MM6 · Poids 40pts (dominant)</h2>
-        <h3>Pourquoi 40% du score ?</h3>
-        <p>L'ISM Composite a la <strong>corrélation la plus forte avec le SPX à +6 mois</strong> dans notre backtest (r=+0.156 vs +0.104 pour les spreads). C'est une enquête mensuelle auprès des directeurs des achats de 300 grandes entreprises — ils voient les commandes ralentir ou accélérer en temps réel, avec 1-2 mois d'avance sur les données officielles.</p>
-        <div class="formula-box">ISM Composite MM3 = [MM3(Manufacturing) + MM3(Services)] / 2<br>Sources : <span>NAPM</span> (Mfg, depuis 1948) + <span>NMFCI</span> (Services, depuis 1997) · Publication : 1er jour ouvré du mois</div>
-        <h3>Pourquoi le composite Mfg + Services est essentiel</h3>
-        <p>L'ISM Manufacturing seul est trompeur depuis 2015 : l'industrie ne représente plus que 11% du PIB américain. De 2022 à 2024, l'ISM Manufacturing était en contraction pendant 26 mois consécutifs — mais le marché a ignoré ce signal car l'ISM Services (80% du PIB) restait en expansion. Le composite capte la réalité économique réelle.</p>
-        <h3>Signal de momentum MM3-MM6</h3>
-        <p>La différence MM3-MM6 détecte les accélérations et décélérations <strong>2-3 mois avant que le niveau ne franchisse 50</strong>. Un ISM à 49 qui monte (MM3 &gt; MM6) est meilleur qu'un ISM à 52 qui descend.</p>
-        <table class="exp-table">
-          <tr><th>Composite MM3</th><th>Points niveau</th><th>MM3-MM6</th><th>Points momentum</th></tr>
-          <tr><td>&gt; 55</td><td>24/24 Expansion forte</td><td>&gt; +2</td><td>16/16 Accélération forte</td></tr>
-          <tr><td>52–55</td><td>19/24 Expansion</td><td>+0.5 à +2</td><td>12/16 Accélération</td></tr>
-          <tr><td>49–52</td><td>12/24 Neutre</td><td>-0.5 à +0.5</td><td>7/16 Stable</td></tr>
-          <tr><td>46–49</td><td>5/24 Contraction légère</td><td>-2 à -0.5</td><td>3/16 Décélération</td></tr>
-          <tr><td>&lt; 46</td><td>0/24 Contraction franche</td><td>&lt; -2</td><td>0/16 Décélération forte</td></tr>
-        </table>
-      </div>
-
-      <div class="exp-section">
-        <h2>🏦 Modificateur 1 — Contexte Fed · ±5pts plafonnés</h2>
-        <h3>Pourquoi un modificateur et pas un 5ème indicateur ?</h3>
-        <p>Les taux sont <strong>régime-dépendants</strong> : 5% en 2006 avec des bilans sains ≠ 5% en 2023 avec des ménages surendettés. Un indicateur pondéré créerait des faux signaux en hausse graduelle (2004-2006) ou en résilience post-COVID. Le modificateur résout ça : il n'est actif que dans des conditions précises de fin de cycle.</p>
-        <div class="formula-box">r* (taux neutre) = 2.5% avant 2020 · 2.75% depuis 2020<br>Malus actif si FF &gt; r*+0.5% depuis ≥9 mois · Bonus ZLB +3pts si FF &lt; 0.5%</div>
-        <h3>Les 3 signaux du modificateur</h3>
-        <p><strong>Signal 1 — Zone restrictive prolongée :</strong> au-delà de 9 mois au-dessus de r*+0.5%, la pression cumulée commence à fracturer les bilans fragiles. Malus croissant, plafonné à -5pts après 18 mois. En Sep 2007 (24 mois restrictif) : malus -5pts → score 60→55, signal de vigilance déclenché.</p>
-        <p><strong>Signal 2 — Premier pivot baissier :</strong> le premier cut après un cycle de hausse signale que la Fed reconnaît une détérioration. Malus -1 à -4pts selon l'amplitude des coupes, sur les 6 premiers mois post-pivot.</p>
-        <p><strong>Signal 3 — ZLB / Fed put :</strong> Fed à 0% = arsenal contre-cyclique déployé. +3pts pour éviter les faux signaux bear en 2010-2015 et 2020-2021.</p>
-        <h3>Résultats backtest</h3>
-        <p>Gain de précision : 73% → 80% sur 30 épisodes (+2 cas corrects). Aucune dégradation. Valeur principale sur les fins de cycle haussier (GFC 2007-2008) où il renforce un signal de dégradation encore ambigu.</p>
-      </div>
-
-      <div class="exp-section">
-        <h2>📡 Modificateur 2 — NFCI Chicago Fed · Conditionnel zone 40–68</h2>
-        <h3>Qu'est-ce que le NFCI ?</h3>
-        <p>Le National Financial Conditions Index de la Fed de Chicago agrège <strong>105 indicateurs financiers</strong> : conditions de crédit bancaire, levier du système financier, marchés monétaires, primes de liquidité interbancaire, shadow banking. Valeur négative = accommodant. Valeur positive = stress systémique naissant.</p>
-        <div class="formula-box">NFCI &lt; -0.3 : Très accommodant · -0.3 à 0 : Normal · 0 à 0.5 : Premiers signes stress<br>NFCI &gt; 0.5 : Stress systémique · &gt; 1.0 : Crise · Série FRED : <span>NFCI</span> · Publication hebdomadaire</div>
-        <h3>Pourquoi conditionnel (40-68 seulement) ?</h3>
-        <p>En bull franc (score &gt;68), le NFCI est structurellement négatif — pas d'information différentielle. En crise avérée (score &lt;40), le stress est déjà visible dans les spreads HY et le VIX. C'est uniquement dans la <strong>zone ambiguë de fin de cycle</strong> que le NFCI apporte quelque chose d'unique : le stress dans le système bancaire fantôme et les marchés de financement courts, <strong>3-6 mois avant que les spreads HY réagissent</strong>.</p>
-        <h3>Cas historique clé : 2007</h3>
-        <p>Le NFCI a commencé à monter en janvier 2007 (de -0.65 à -0.22) avant de passer positif en juin. Les spreads HY ne se sont élargis significativement qu'en août. Le NFCI captait le stress des marchés subprime et des conduits de titrisation — structures absentes des indices HY grand public. En Sep 2007 : NFCI=0.62 → ajustement -4pts → score 60→51 (signal de vigilance renforcé).</p>
-        <h3>Résultats backtest — amplificateur, pas déclencheur</h3>
-        <p>Sur 30 épisodes, le NFCI n'améliore pas la précision globale vs le modificateur Fed seul (80% dans les deux cas). <strong>Mais il n'a dégradé aucun épisode.</strong> Son rôle : amplifier les signaux de fin de cycle sans créer de faux positifs. Asymétrie positive justifiant son maintien dans le modèle avec activation conditionnelle.</p>
-      </div>
-
-      <div class="exp-section">
-        <h2>⚡ Vélocité de dégradation — Signal de retournement précoce</h2>
-        <h3>Principe : la vitesse de dégradation prime sur le niveau absolu</h3>
-        <p>Le score peut être à 58 (Bull) tout en se dégradant rapidement. La vélocité mesure la variation normalisée du score sur 3 mois, décomposée par indicateur. Quand 2, 3 ou 4 indicateurs se dégradent <strong>simultanément</strong>, c'est un signal de retournement structurel même si le score absolu reste en Bull.</p>
-        <div class="formula-box">Vélocité composite = 0.40×ΔISM + 0.20×ΔYield + 0.20×ΔSpreads + 0.20×ΔVIX (Δ sur 3 mois normalisé)<br>Seuils : &lt;-8pts alerte · &lt;-15pts fort · &lt;-25pts sévère</div>
-        <p><strong>Score &gt;60 + Vélocité &lt;-15 :</strong> correction temporaire, rebond probable · Perf. moy +6m : +9.3%</p>
-        <p><strong>Score 40–60 + Vélocité &lt;-15 :</strong> bear confirmé dans 40% des cas · Perf. moy +6m : -2.1%</p>
-        <p><strong>Score &lt;45 + Vélocité &lt;-20 :</strong> bear dans 80% des cas · Perf. moy +6m : -14.2%</p>
-        <p><strong>Signal clé Sep 2007 :</strong> vélocité -19pts, score 60→51 avec NFCI. Le marché ne corrige pas immédiatement mais c'est le premier signal structurel — <strong>14 mois de fenêtre avant Lehman</strong>.</p>
-      </div>
-
-      <div class="exp-section">
-        <h2>📊 Performance comparée des 3 modèles — 30 épisodes 1999–2024</h2>
-        <table class="exp-table">
-          <tr><th>Modèle</th><th>Précision globale</th><th>Vrais bears détectés</th><th>Faux positifs</th><th>Note</th></tr>
-          <tr><td>A — 4 indicateurs de base</td><td>73% (22/30)</td><td>33% (3/9)</td><td>10%</td><td>Référence</td></tr>
-          <tr><td>B — +Modificateur Fed</td><td>80% (24/30)</td><td>56% (5/9)</td><td>10%</td><td>+2 cas corrects</td></tr>
-          <tr><td>C — +Fed +NFCI conditionnel</td><td>80% (24/30)</td><td>56% (5/9)</td><td>10%</td><td>Signaux renforcés</td></tr>
-          <tr><td><strong>C hors chocs exogènes</strong></td><td><strong>86% (24/28)</strong></td><td><strong>67%</strong></td><td><strong>10%</strong></td><td><strong>Référence ajustée</strong></td></tr>
-        </table>
-        <h3>Les 2 cas structurellement non prédictibles</h3>
-        <p><strong>COVID Mars 2020</strong> : score 16 (Crise) → SPX +20% à 6m. Le rebond est dû à la réponse politique sans précédent (Fed + Trésor + CARES). Aucun modèle macro ne peut anticiper une pandémie suivie d'un stimulus de $6T.</p>
-        <p><strong>SVB Mars 2023</strong> : score 30 (Bear) → SPX +4.4% à 6m. La faillite de SVB a été résolue par la FDIC en 72h avec garantie totale des dépôts. Le modèle avait raison sur la fragilité systémique, mais l'intervention politique a été immédiate et totale.</p>
-        <h3>Usage recommandé</h3>
-        <p>Ce score est un <strong>filtre de risque macroéconomique</strong>, pas un signal d'entrée/sortie binaire. Il donne le contexte ; l'analyse technique donne le timing. Score ≥55 → pleine exposition · 36–54 → exposition réduite, stops plus serrés · &lt;36 → mode défensif · &lt;20 → sortie ou stratégies non-directionnelles.</p>
-      </div>
-
-      <!-- ═══ SIGNALS METHODOLOGY ═══ -->
-      <div class="exp-section" style="margin-top:24px">
-        <h2>🔔 Signaux d'alerte — Logique et méthode</h2>
-        <p>Les signaux d'alerte détectent les <strong>retournements de cycle avant</strong> qu'ils ne soient visibles dans le score composite. Ils mesurent la <em>vélocité</em> — la vitesse de dégradation des indicateurs sur 3 mois — plutôt que leur niveau absolu.</p>
-
-        <div class="formula-box" style="margin:16px 0">
-          <strong>Vélocité composite (Δ3m)</strong><br><br>
-          Δ3m = (<strong>20%</strong> × ΔCourbe + <strong>20%</strong> × ΔSpreads + <strong>20%</strong> × ΔVIX + <strong>40%</strong> × ΔISM) × 100<br><br>
-          Chaque Δ = score normalisé actuel − score normalisé il y a 3 mois<br>
-          ISM pondéré 40% car indicateur leading le plus prédictif (r=+0.65 à 6 mois)
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Niveaux d'alerte</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="padding:10px 14px;background:rgba(13,171,114,0.06);border-radius:8px;border-left:3px solid #0dab72">
-                <div style="font-weight:700;color:#0dab72;font-size:12px">🟢 STABLE · Δ3m ≥ −3</div>
-                <div style="font-size:11px;color:var(--dim);margin-top:3px">Aucune dégradation significative. Maintien de l'exposition.</div>
-              </div>
-              <div style="padding:10px 14px;background:rgba(245,200,66,0.06);border-radius:8px;border-left:3px solid #f0b429">
-                <div style="font-weight:700;color:#f0b429;font-size:12px">🟡 VIGILANCE · Δ3m entre −8 et −3 · ≥2 indicateurs</div>
-                <div style="font-size:11px;color:var(--dim);margin-top:3px">Dégradation modérée synchronisée. Surveiller, ne pas augmenter l'exposition.</div>
-              </div>
-              <div style="padding:10px 14px;background:rgba(255,107,0,0.06);border-radius:8px;border-left:3px solid #ff6b00">
-                <div style="font-weight:700;color:#ff6b00;font-size:12px">🟠 ALERTE · Δ3m entre −15 et −8 · ≥2 indicateurs</div>
-                <div style="font-size:11px;color:var(--dim);margin-top:3px">Dégradation rapide. Réduire progressivement. Historique : −12% SPX dans les 6 mois.</div>
-              </div>
-              <div style="padding:10px 14px;background:rgba(240,56,79,0.06);border-radius:8px;border-left:3px solid #f0384f">
-                <div style="font-weight:700;color:#f0384f;font-size:12px">🔴 SIGNAL BEAR · Δ3m &lt; −25 · ≥3 indicateurs</div>
-                <div style="font-size:11px;color:var(--dim);margin-top:3px">Effondrement synchronisé. Hedger ou passer défensif. Précédents : GFC 2008, COVID 2020.</div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Conditions de déclenchement</div>
-            <p style="font-size:12px;color:var(--dim);line-height:1.7">Un signal nécessite <strong>deux conditions simultanées</strong> :</p>
-            <div style="display:flex;flex-direction:column;gap:6px;margin:8px 0">
-              <div style="padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:12px">
-                <strong>1.</strong> Vélocité composite sous le seuil (ex: &lt;−8)
-              </div>
-              <div style="padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:12px">
-                <strong>2.</strong> Au moins 2 (ou 3) indicateurs en baisse simultanément
-              </div>
-            </div>
-            <p style="font-size:12px;color:var(--dim);line-height:1.7;margin-top:8px">Cette double condition <strong>évite les faux signaux</strong> dus à un seul indicateur erratique (ex: VIX spike ponctuel). Un soft landing authentique comme 2024 — où les indicateurs se dégradent en ordre dispersé sans synchronisation — ne déclenche pas d'alerte.</p>
-            <div style="padding:10px 14px;background:var(--surface2);border-radius:8px;margin-top:10px;font-size:12px">
-              <strong>Exemples historiques</strong><br>
-              <span style="color:var(--dim)">• 2000-09 : Alerte forte → SPX −45% sur 18 mois<br>
-              • 2008-09 : Signal Bear → SPX −55% sur 12 mois<br>
-              • 2020-03 : Signal Bear → SPX −34% (V-shape)<br>
-              • 2022-04 : Alerte forte → SPX −25% sur 8 mois</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="padding:12px 16px;background:rgba(59,91,255,0.05);border-radius:8px;border:1px solid rgba(59,91,255,0.15);font-size:12px;line-height:1.7;margin-top:8px">
-          <strong style="color:var(--blue)">💡 Pourquoi peu de signaux en 2023-2025 ?</strong><br>
-          Le bull market post-COVID s'est accompagné de corrections sectorielles mais sans dégradation macro <em>synchronisée</em>. Quand l'ISM baissait, les spreads tenaient. Quand le VIX montait, la courbe se redressait. Cette décorrélation est précisément la signature d'un soft landing — l'algorithme ne la confond pas avec un retournement systémique.
-        </div>
-      </div>
-
-    </div>
-  </div>
-  </div>
+<!-- CTA OUTSETA -->
+<div style="margin:24px 0 8px 0;background:linear-gradient(135deg,#f0f3ff 0%,#e8edff 100%);border:1px solid rgba(59,91,255,0.18);border-radius:14px;padding:32px;text-align:center;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#3B5BFF,transparent);"></div>
+  <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#3B5BFF;margin-bottom:10px;font-family:'DM Mono',monospace;">🔒 Méthode complète · Backtest · Signaux</div>
+  <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.25rem;font-weight:800;color:#0f1624;margin-bottom:8px;line-height:1.3;">Accédez à la logique complète<br>de cet indicateur</div>
+  <div style="font-size:0.75rem;color:#6b7280;margin-bottom:24px;line-height:1.6;max-width:460px;margin-left:auto;margin-right:auto;">Formules, pondérations, backtest 93% de précision et signaux d'alerte — réservé aux membres Equity Formation.</div>
+  <div data-o-lead-capture="1" data-form-uid="79OjNPQE" data-mode="embed"></div>
+  <div style="margin-top:14px;font-size:0.58rem;color:#9ca3af;">Accès immédiat · Equity Formation</div>
 </div>
-
 <script>
 // ================================================================
 // DATA & CONFIG
@@ -1797,41 +1200,17 @@ const PROXY = 'https://mute-wind-c243.archive-du-trading.workers.dev';
 
 async function fetchS(id){
   const agg = 'eop';
-  // Essai 1 : Netlify Function proxy
-  try {
-    const url = `${PROXY}?series_id=${id}&observation_start=1999-01-01&frequency=m&aggregation_method=${agg}`;
-    const r = await fetch(url, {signal: AbortSignal.timeout(15000)});
-    if(r.ok){
-      const j = await r.json();
-      if(j.observations){
-        const m={};
-        for(const o of j.observations){
-          if(o.value && o.value!=='.') m[o.date.slice(0,7)] = parseFloat(o.value);
-        }
-        return m;
-      }
-    }
-  } catch(e){ console.warn('Proxy Netlify échoué, essai fallback...', e.message); }
-
-  // Essai 2 : allorigins proxy CORS (fallback)
-  try {
-    const fredDirect = `https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${FRED_KEY}&file_type=json&observation_start=1999-01-01&frequency=m&aggregation_method=${agg}`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(fredDirect)}`;
-    const r2 = await fetch(proxyUrl, {signal: AbortSignal.timeout(20000)});
-    if(r2.ok){
-      const wrapper = await r2.json();
-      const j = JSON.parse(wrapper.contents);
-      if(j.observations){
-        const m={};
-        for(const o of j.observations){
-          if(o.value && o.value!=='.') m[o.date.slice(0,7)] = parseFloat(o.value);
-        }
-        return m;
-      }
-    }
-  } catch(e2){ console.warn('Fallback allorigins échoué aussi', e2.message); }
-
-  throw new Error(`${id}: tous les proxys ont échoué`);
+  const url = `${PROXY}?series_id=${id}&observation_start=1999-01-01&frequency=m&aggregation_method=${agg}`;
+  const r = await fetch(url, {signal: AbortSignal.timeout(20000)});
+  if(!r.ok) throw new Error(`${id}: HTTP ${r.status}`);
+  const j = await r.json();
+  if(j.error_code) throw new Error(`${id}: ${j.error_message}`);
+  if(!j.observations) throw new Error(`${id}: pas d'observations`);
+  const m={};
+  for(const o of j.observations){
+    if(o.value && o.value!=='.') m[o.date.slice(0,7)] = parseFloat(o.value);
+  }
+  return m;
 }
 function gv(map,d){
   if(!map) return null;
@@ -1938,9 +1317,8 @@ function getSPX(date){
 async function fetchSPX(){
   try{
     // Yahoo Finance : ^GSPC, clôtures mensuelles depuis 1999
-    const url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(
-      'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1mo&range=30y'
-    );
+    const yahooUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1mo&range=30y';
+    const url = 'https://mute-wind-c243.archive-du-trading.workers.dev/yahoo?url=' + encodeURIComponent(yahooUrl);
     const r = await fetch(url, {signal: AbortSignal.timeout(10000)});
     if(!r.ok) return;
     const j = await r.json();
@@ -3126,7 +2504,7 @@ async function init(){
     });
     const [yM,vM,sM,imM,isM,spgM]=await Promise.all([
       fetchS('T10Y2Y'),fetchS('VIXCLS'),fetchS('BAMLH0A0HYM2'),
-      fetchS('NAPM'),fetchS('NMFCI'),fetchS('BSXRLV02USM086S'),
+      Promise.resolve({}),fetchS('NFCI'),fetchS('BSXRLV02USM086S'),
     ]);
     // Injecter les valeurs manuelles dans imM (override NAPM pour 2022+)
     // Fusionner : ISM_MANUAL prime, S&P Global PMI (spgM) comble les gaps post-2007
