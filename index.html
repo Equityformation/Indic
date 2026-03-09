@@ -715,11 +715,11 @@ function renderCtxGauges(date){
   setGauge('cpiVal','cpiBar','cpiSig','gaugeCPI', cpi.toFixed(1)+'%', cpiPct, cpiColor, cpiSig);
 
   // Colorer ep-cards contexte actuel
-  const gpp=document.getElementById('gaugePP');
+  const gpp=document.getElementById('gaugePP');if(!gpp)return;
   gpp.style.borderColor=ppColor+'40'; gpp.style.background=ppColor+'08';
-  const gcl=document.getElementById('gaugeCL');
+  const gcl=document.getElementById('gaugeCL');if(!gcl)return;
   gcl.style.borderColor=clColor+'40'; gcl.style.background=clColor+'08';
-  const gcpi=document.getElementById('gaugeCPI');
+  const gcpi=document.getElementById('gaugeCPI');if(!gcpi)return;
   gcpi.style.borderColor=cpiColor+'40'; gcpi.style.background=cpiColor+'08';
 }
 
@@ -1645,6 +1645,7 @@ function runBacktest(dataset){
 }
 
 function buildBacktestTable(results){
+  if(!document.getElementById('btBody')) return;
   const tb=document.getElementById('btBody');tb.innerHTML='';
   const tc={bull:'#10d48e',bear:'#f0384f',late:'#f0b429',panic:'#8b5cf6'};
   for(const r of results){
@@ -1664,6 +1665,7 @@ function buildBacktestTable(results){
 }
 
 function buildOptimizationResults(results){
+  if(!document.getElementById('optGrid')) return;
   const total=results.length;
   const correct=results.filter(r=>r.match).length;
   const accuracy=Math.round((correct/total)*100);
@@ -1687,6 +1689,7 @@ function buildOptimizationResults(results){
 }
 
 function buildSensitivityChart(dataset){
+  if(!document.getElementById('sensitivityChart')) return;
   dc('sens');
   // Simulate what accuracy would be if we varied each indicator's weight
   const indicators=['Yield (niveau)','Yield (mom.)','Spreads (niveau)','Spreads (mom.)','VIX (niveau)','VIX (mom.)','ISM (niveau)','ISM (mom.)'];
@@ -1708,6 +1711,7 @@ function buildSensitivityChart(dataset){
 }
 
 function buildThresholdChart(dataset){
+  if(!document.getElementById('thresholdChart')) return;
   dc('thresh');
   // Test accuracy at different threshold values (40 to 70 for bull threshold)
   const thresholds=[];
@@ -1752,6 +1756,7 @@ function buildThresholdChart(dataset){
 }
 
 function buildCorrChart(dataset){
+  if(!document.getElementById('corrChart')) return;
   dc('corr');
   // Correlation between each indicator and SPX return over next 1m, 3m, 6m
   // Pre-computed from backtesting analysis
@@ -1803,6 +1808,7 @@ const PDATA={
 };
 
 function buildPeriodTabs(){
+  if(!document.getElementById('ptabs')) return;
   const tb=document.getElementById('ptabs');
   [{id:'bear',l:'🔴 Bears'},{id:'bull',l:'🟢 Bulls'},{id:'panic',l:'⚫ Panics'}].forEach((t,i)=>{
     const b=document.createElement('button');b.className='ptab'+(i===0?' active':'');b.textContent=t.l;
@@ -1950,6 +1956,7 @@ function setZoom(key,btn){
 }
 
 function rebuildBtCharts(ds){
+  if(!document.getElementById('btScoreChart')) return;
   buildBtSpxChart(ds);
   buildBtScoreChart(ds);
   buildBtVelChart(ds);
@@ -2033,7 +2040,7 @@ function buildBtSpxChart(ds){
 
   // Update badge
   const last=ds[ds.length-1];
-  if(last) document.getElementById('spxCurVal').textContent=`SPX ${Math.round(last.spx).toLocaleString()}`;
+  if(last){const el=document.getElementById('spxCurVal');if(el)el.textContent=`SPX ${Math.round(last.spx).toLocaleString()}`;}
 }
 
 function buildBtScoreChart(ds){
@@ -2089,7 +2096,7 @@ function buildBtScoreChart(ds){
   });
 
   const last=ds[ds.length-1];
-  if(last){const el=document.getElementById('scoreCurVal');const reg=regime(last.sc);el.textContent=`Score ${last.sc}/100 · ${reg.name}`;el.style.color=reg.color;}
+  if(last){const el=document.getElementById('scoreCurVal');if(el){const reg=regime(last.sc);el.textContent=`Score ${last.sc}/100 · ${reg.name}`;el.style.color=reg.color;}}
 }
 
 function buildBtVelChart(ds){
@@ -2150,7 +2157,7 @@ function buildBtVelChart(ds){
   });
 
   const last=ds[ds.length-1];
-  if(last){const v=last.vel?.compVel??0;const el=document.getElementById('velCurVal');el.textContent=`Δ3m ${v>=0?'+':''}${v.toFixed(1)}pts`;el.style.color=v<-20?'#f0384f':v<-8?'#ff6b00':v>8?'#10d48e':'#64748b';}
+  if(last){const v=last.vel?.compVel??0;const el=document.getElementById('velCurVal');if(el){el.textContent=`Δ3m ${v>=0?'+':''}${v.toFixed(1)}pts`;el.style.color=v<-20?'#f0384f':v<-8?'#ff6b00':v>8?'#10d48e':'#64748b';}}
 }
 
 function buildBtSyncChart(ds){
@@ -2198,6 +2205,7 @@ function buildBtSyncChart(ds){
 }
 
 function buildVelEpisodeTable(ds){
+  if(!document.getElementById('velEpBody')) return;
   const byDate={};ds.forEach(d=>byDate[d.date]=d);
   const tb=document.getElementById('velEpBody');tb.innerHTML='';
   const sorted=[...VEL_EPISODES].sort((a,b)=>a.date.localeCompare(b.date));
@@ -2232,7 +2240,7 @@ function buildVelEpisodeTable(ds){
 }
 
 function showEpisodeDetail(ep,dpt){
-  const panel=document.getElementById('epDetailPanel');
+  const panel=document.getElementById('epDetailPanel');if(!panel)return;
   const title=document.getElementById('epDetailTitle');
   const content=document.getElementById('epDetailContent');
   const sevC=ep.sev==='severe'?'#f0384f':ep.sev==='strong'?'#ff6b00':'#f0b429';
@@ -2474,21 +2482,6 @@ async function init(){
   buildISMChart(dataset);
   buildFedChart(dataset);
   renderVelocity(dataset);
-
-  setL(90,'Backtest & Optimisation...');await sleep(150);
-  const btResults=runBacktest(dataset);
-  buildBacktestTable(btResults);
-  buildOptimizationResults(btResults);
-  buildSensitivityChart(dataset);
-  buildThresholdChart(dataset);
-  buildCorrChart(dataset);
-
-  // Visual backtest page
-  _btDs=dataset;
-  rebuildBtCharts(dataset);
-  buildVelEpisodeTable(dataset);
-
-  buildPeriodTabs();
 
   setL(100,'Prêt.');await sleep(300);
   document.getElementById('loader').style.display='none';
