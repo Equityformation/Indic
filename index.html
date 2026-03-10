@@ -354,7 +354,13 @@ canvas{background:transparent!important;}
 
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
-<script src="https://cdn.outseta.com/outseta.min.js" data-options='{"load": ["leadCapture"]}'></script>
+<script>
+var o_options = {
+  domain: 'equityformation.outseta.com',
+  load: 'leadCapture'
+};
+</script>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
 </head>
 <body>
 
@@ -2480,6 +2486,7 @@ async function init(){
   setL(100,'Prêt.');await sleep(300);
   document.getElementById('loader').style.display='none';
   document.getElementById('app').style.display='block';
+  document.getElementById('app').style.opacity='1';
 
   // Widgets dashboard
   hookWidgets(dataset);
@@ -2583,7 +2590,11 @@ function renderRecentSignals(ds){
   }).join('');
 }
 
-init();
+init().catch(e=>{
+  console.error('Init error:', e);
+  document.getElementById('loader').style.display='none';
+  document.getElementById('app').style.display='block';
+});
 </script>
 </body>
 </html>
